@@ -1,4 +1,4 @@
-NetBeans优化技巧 提升启动速度
+NetBeans优化技巧提升启动速度
 NetBeans优化的目的是提高NetBeans的启动速度和运行速度。下面介绍的NetBeans优化技巧是在版本6.0beta2上的优化。经过实验，大大提高了NetBeans的启动速度.
 1，修改英文netbeans界面字体大小，修改%Netbeans_home%\etc\netbeans.conf
 在netbeans_default_options里加上 –fontsize 13
