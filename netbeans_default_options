@@ -1,0 +1,31 @@
+NetBeans优化技巧 提升启动速度
+NetBeans优化的目的是提高NetBeans的启动速度和运行速度。下面介绍的NetBeans优化技巧是在版本6.0beta2上的优化。经过实验，大大提高了NetBeans的启动速度.
+1，修改英文netbeans界面字体大小，修改%Netbeans_home%\etc\netbeans.conf
+在netbeans_default_options里加上 –fontsize 13
+2，修改JVM内存配置（本机内存1G，不同内存大小不同设置）
+在netbeans_default_options里加上 -J-Xmx512m，同时修改-J-Xms256m。
+【说明】-J-Xms32m
+此设置用于通知 Java 虚拟机将其初始堆大小设置为 32 MB。通过通知 JVM 它最初应该为堆分配多少内存，我们可以防止它随着 IDE 使用更多的内存而将堆增大。
+【说明】-J-Xmx128m
+此设置用于指定 Java 虚拟机应该用于堆的最大内存。对此数值设置硬性上限意味着 Java 进程不能使用比可用的物理 RAM 更多的内存。对于具有更多内存的系统可以提升此限制 – 128 MB 设置有助于确保 IDE 在 256MB 的系统上可靠地执行操作。注意：不要将此值设置为接近或大于系统中的物理 RAM 数，否则在主要回收过程中将导致频繁的交换空间操作。
+3，在netbeans_default_options里修改 -J-XX:PermSize=20m
+这是一个较特殊的 JVM 开关，但它也缩短了启动时间。此设置用于调整内存中“永久区域”（在这里保存类）的大小。由于我们知道所有 IDE 类均占用特定数量的内存，因此我们向 JVM 提示它将需要的内存数量。此设置消除了许多系统上启动过程中的主要垃圾回收事件。SunONE Studio 或包括更多模块的其他 IDE 的用户可能希望将此数值设置得更高些。
+4，在netbeans_default_options里加上-J-Xverify:none
+此开关用于关闭 Java 字节码验证，从而加快类加载，以及消除在启动过程中仅为验证目的而加载类的需要。此开关将显著缩短启动时间。
+5，在Tools-Plugins-installed里面把不需要的模块去掉
+我这里去掉了 Glashfish；JSF；CVS；Subversion等。速度就得到很大提高了。当然如果你的开发需要这些模块就不需要去掉了。
+6，修改编辑器配置
+把所有的Javadoc自动弹出窗口去掉，把所有自动完成延时设置为0，把所有自动完成大小写敏感去掉。
+注：在netbeans6的JAVA代码编辑器设置里面默认没有设置代码自动完成的延时设置了。可以自己手动加入到配置文件C:\Documents and Settings\%USER_NAME%\.netbeans\6.0beta2\config\Editors\text\x-java下的 properties.xml，加入
+【说明】 preperties.xml文件默认不存在，只有在你修改了编辑器配置以后才会出现这个文件。
+根据经验，Xmx应设为物理内存的一半，初始堆大小Xms是Xmx的1/2，比如1G内存的机器，Xms256m, Xmx512m
+Netbeans5.5.1默认的PermSize是160m，如果在开发中经常遇到 java.lang.OutOfMemoryError: PermGen space的异常，可以将此PermSize设大一些。
+下面列出了一些其他的 JVM 开关，在一些系统（而不是所有系统）上，这些开关会或多或少地影响 NetBeans 性能。尽管使用它们会产生一定的影响，但仍值得一试。
+* -J-XX:CompileThreshold=100
+此开关将会延长启动时间，原因是：与不使用此开关的情况相比，HotSpot JVM 会以更快的速度将更多的方法编译到本地代码中。其结果是提高了IDE 运行时的性能，这是因为更多的 UI 代码将被编译而不是被解释。此值表示在编译一个方法之前必须调用它的次数。
+* -J-XX:+UseConcMarkSweepGC -J-XX:+UseParNewGC
+如果出现垃圾回收意外中断的问题，则请尝试使用这些开关。此开关导致 JVM 对主要垃圾回收事件（如果在多处理器工作站上运行，则也适用于次要回收事件）使用不同的算法，这些算法不会影响整个垃圾回收进程。如果使用了 PermSize 开关，则还应向 netbeans.conf 文件中添加行 -J-XX:+CMSClassUnloadingEnabled，以便启用类卸载（使用此回收器时，缺省情况下不启用类卸载）。注意：目前尚不确定此回收器是提高还是降低单处理器计算机的性能。
+* -J-XX:+UseParallelGC
+某些测试表明，至少在内存配置相当好的单处理器系统中，使用此回收算法可以将次要垃圾回收的持续时间减少一半。请注意，这是一个矛盾的问题 – 事实上此回收器主要适用于具有千兆字节堆的多处理器系统。尚无可用数据表明它对主要垃圾回收的影响。注意：此回收器与 -J-XX:+UseConcMarkSweepGC 是互斥的。可以在性能 Web 站点上找到支持使用此算法的度量数据。
+* -J-XX:+UseConcMarkSweepGC-J-XX:+CMSClassUnloadingEnabled-J-XX:+CMSPermGenSweepingEnabled，是优化垃圾回收的
+越来越觉得netbeans用着随手，但最近老是假死，所以找了这篇文章对NetBeans优化了下，没想到效果很明显。嘿嘿，如果你的netbeans也很慢点话，不妨一试。
